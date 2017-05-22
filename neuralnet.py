@@ -21,23 +21,38 @@ def bias_variable(shape):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
 
+def fc_layer(scope, x, weight_shape, activation = 'relu', keep_prob = 1.0):
+    with tf.variable_scope(scope):
+        W_fc = weight_variable(weight_shape)
+        b_shape = [weight_shape[-1]]
+        b_fc = bias_variable(b_shape)
+        h_fc = tf.nn.relu(tf.matmul(x, W_fc) + b_fc)
+        h_fc_drop = tf.nn.dropout(h_fc, keep_prob=keep_prob)
+        return h_fc_drop
+
 # create weights and biases and function for our first layer
 W_fc1, b_fc1 = weight_variable([784, 100]), bias_variable([100])
 # hidden layer computes relu(Wx + b)
-h_fc1 = tf.nn.relu(tf.matmul(x, W_fc1) + b_fc1)
+#h_fc1 = tf.nn.relu(tf.matmul(x, W_fc1) + b_fc1)
 
 keep_prob_1 = tf.placeholder(tf.float32)
 # add dropout: discard activations with probability given by keep_prob
-h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob_1)
+#h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob_1)
+
+h_fc1_dropout = fc_layer("layer-1", x, [784, 100], activation = 'relu',
+                         keep_prob = keep_prob_1)
 
 # create w, b, and function for our next layer
 W_fc2, b_fc2 = weight_variable([100, 30]), bias_variable([30])
-h_fc2 = tf.nn.relu(tf.matmul(h_fc1_dropout, W_fc2) + b_fc2)
+#h_fc2 = tf.nn.relu(tf.matmul(h_fc1_dropout, W_fc2) + b_fc2)
 
-# add dropout
+# # add dropout
 keep_prob_2 = tf.placeholder(tf.float32)
-# discard second hidden layer activations with keep_prob_2 probability
-h_fc2_dropout = tf.nn.dropout(h_fc2, keep_prob_2)
+
+# # discard second hidden layer activations with keep_prob_2 probability
+#h_fc2_dropout = tf.nn.dropout(h_fc2, keep_prob_2)
+h_fc2_dropout = fc_layer("layer-2", h_fc1_dropout, [100, 30], activation = 'relu',
+                         keep_prob = keep_prob_2)
 # define w and b for the softmax layer
 W_fc3, b_fc3 = weight_variable([30, 10]), bias_variable([10])
 
@@ -59,8 +74,6 @@ with tf.Session() as sess:
     for i in range(10000):
         # iterate for 10k epochs and run batch SGD.
         batch = mnist.train.next_batch(100)
-        print(type(batch[0]))
-        exit()
         sess.run(train_step, feed_dict={x: batch[0], y_: batch[1], keep_prob_1: 0.8,
                                         keep_prob_2: 0.5})
         if i % 100 == 0:
