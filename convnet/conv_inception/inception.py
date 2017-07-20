@@ -33,9 +33,37 @@ def conv2d(x, W):
     """
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-def max_pool_2x2(x, name = 'max pooling'):
+def max_pool_2x2(x, name = 'max pooling 2x2'):
     """Performs a max pooling operation over a 2 x 2 region"""
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                         strides=[1, 2, 2, 1], padding='SAME', name = name)
 
+def max_pool_3x3(x, name = 'max pooling 3x3'):
+    """Performs a max pooling operation over a 3x3 region"""
+    return tf.nn.max_pool(x, ksize = [1, 3, 3, 1],
+                          strides = [1, 1, 1, 1], padding = 'SAME', name = name)
+
 x_image = tf.reshape(x, [-1,28,28,1], name = 'x-image-reshaped') # convert x to a 4-d tensor
+
+with tf.name_scope('model'):
+    # Inception module 1
+    # 1x1 convolution -> 32 feature maps
+    W_conv1_1x1_1 = weight_variable([1, 1, 1, 32], name = 'W_conv1_1x1_1')
+    b_conv1_1x1_1 = bias_variable([32], name = 'b_conv1_1x1_1')
+    # 1x1 convolution -> 16 feature maps, 3 x 3 convolution -> 32 feature maps
+    W_conv1_1x1_2 = weight_variable([1, 1, 1, 16], name = 'W_conv1_1x1_2')
+    b_conv1_1x1_2 = bias_variable([16], name = 'b_conv1_1x1_2')
+    W_conv1_3x3 = weight_variable([3, 3, 16, 32], name = 'W_conv1_3x3')
+    b_conv1_3x3 = bias_variable([32], name = 'b_conv1_3x3')
+    # 1x1 convolution -> 16 feature maps, 5 x 5 convolution -> 32 feature maps
+    W_conv1_1x1_3 = weight_variable([1, 1, 1, 16], name = 'W_conv1_1x1_3')
+    b_conv1_1x1_3 = bias_variable([16], name = 'b_conv1_1x1_3')
+    W_conv1_5x5 = weight_variable([5, 5, 16, 32], name = 'W_conv1_1x1_5x5')
+    b_conv1_5x5 = weight_variable([32], name = 'b_conv1_1x1_5x5')
+    # max-pooling (of the input x)-> 1x1 convolution -> 32 feature maps
+    W_conv1_1x1_4 = weight_variable([1, 1, 1, 32], name = 'W_conv1_1x1_4')
+    b_conv1_1x1_4 = bias_variable([32], name = 'b_conv1_1x1_4')
+    with tf.name_scope('inception-1'):
+        # compute 1x1, 1x1 -> 3x3, 1x1 -> 5x5, and max-pool of x followed by 1x1
+        h_1x1_1 = conv2d(x_image, W_conv1_1x1_1) + b_conv1_1x1_1
+        
