@@ -33,12 +33,12 @@ def conv2d(x, W):
     """
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-def max_pool_2x2(x, name = 'max pooling 2x2'):
+def max_pool_2x2(x, name = 'max-pool-2x2'):
     """Performs a max pooling operation over a 2 x 2 region"""
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                         strides=[1, 2, 2, 1], padding='SAME', name = name)
 
-def max_pool_3x3(x, name = 'max pooling 3x3'):
+def max_pool_3x3(x, name = 'max-pool-3x3'):
     """Performs a max pooling operation over a 3x3 region"""
     return tf.nn.max_pool(x, ksize = [1, 3, 3, 1],
                           strides = [1, 1, 1, 1], padding = 'SAME', name = name)
@@ -65,5 +65,15 @@ with tf.name_scope('model'):
     b_conv1_1x1_4 = bias_variable([32], name = 'b_conv1_1x1_4')
     with tf.name_scope('inception-1'):
         # compute 1x1, 1x1 -> 3x3, 1x1 -> 5x5, and max-pool of x followed by 1x1
+        # direct 1 x 1 conv
         h_1x1_1 = conv2d(x_image, W_conv1_1x1_1) + b_conv1_1x1_1
-        
+        # 1x1 -> 3 x 3, resulting in 32 feature maps
+        h_1x1_2 = conv2d(x_image, W_conv1_1x1_2) + b_conv1_1x1_2
+        h_3x3_1 = conv2d(h_1x1_2, W_conv1_3x3) + b_conv1_3x3
+        # 1x1 -> 5 x 5, resulting in 32 feature maps
+        h_1x1_3 = conv2d(x_image, W_conv1_1x1_3) + b_conv1_1x1_3
+        h_5x5_1 = conv2d(h_1x1_3, W_conv1_5x5) + b_conv1_5x5
+        # max pooling -> 1 x 1 conv resulting in 32 feature maps
+        x_image_maxpool = max_pool_3x3(x_image)
+        h_maxpool = conv2d(x_image_maxpool, W_conv1_1x1_4) + b_conv1_1x1_4
+        inception_1 = tf.nn.relu(tf.concat([h_1x1_1, h_3x3_1, h_5x5_1, h_maxpool], 3))

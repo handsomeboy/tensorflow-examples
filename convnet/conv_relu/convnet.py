@@ -38,7 +38,7 @@ def conv2d(x, W):
     """
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-def max_pool_2x2(x, name = 'max pooling'):
+def max_pool_2x2(x, name = 'max-pool-2x2'):
     """Performs a max pooling operation over a 2 x 2 region"""
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                         strides=[1, 2, 2, 1], padding='SAME', name = name)
@@ -137,14 +137,10 @@ with tf.Session() as sess:
   			train_acc = accuracy.eval(feed_dict={x:batch[0], y_: batch[1], keep_prob: 1.0})
   			print("train acc: {}".format(train_acc))
 
-  		_, c, summary = sess.run([train_step, cross_entropy, merged_summary_op], 
+  		_, c, summary = sess.run([train_step, cross_entropy, merged_summary_op],
   			feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1 - dropout_prob})
   		summary_writer.add_summary(summary, i)
 	test_acc = accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
 	print("test accuracy {}".format(test_acc))
 	print("run the command tensorboard --logdir=/tmp/cnnlog and then go to localhost:6006 ")
 	sess.close()
-
-
-
-
