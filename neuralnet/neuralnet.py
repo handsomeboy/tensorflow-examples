@@ -22,6 +22,7 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 def fc_layer(scope, x, weight_shape, activation = 'relu', keep_prob = 1.0):
+    # TODO activation param isn't supported...
     with tf.variable_scope(scope):
         W_fc = weight_variable(weight_shape)
         b_shape = [weight_shape[-1]]
@@ -39,7 +40,7 @@ keep_prob_1 = tf.placeholder(tf.float32)
 # add dropout: discard activations with probability given by keep_prob
 #h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob_1)
 
-h_fc1_dropout = fc_layer("layer-1", x, [784, 100], activation = 'relu',
+h_fc1_dropout = fc_layer("layer-1", x, [784, 100], activation = 'softplus',
                          keep_prob = keep_prob_1)
 
 # create w, b, and function for our next layer
@@ -51,7 +52,7 @@ keep_prob_2 = tf.placeholder(tf.float32)
 
 # # discard second hidden layer activations with keep_prob_2 probability
 #h_fc2_dropout = tf.nn.dropout(h_fc2, keep_prob_2)
-h_fc2_dropout = fc_layer("layer-2", h_fc1_dropout, [100, 30], activation = 'relu',
+h_fc2_dropout = fc_layer("layer-2", h_fc1_dropout, [100, 30], activation = 'softplus',
                          keep_prob = keep_prob_2)
 # define w and b for the softmax layer
 W_fc3, b_fc3 = weight_variable([30, 10]), bias_variable([10])
