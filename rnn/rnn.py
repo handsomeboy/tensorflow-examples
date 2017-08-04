@@ -95,17 +95,19 @@ def train_network(num_epochs, verbose=True):
                               "for last 100 steps:", training_loss/100)
                     training_losses.append(training_loss/100)
                     training_loss = 0
-        # predict data
-        # preds, Y = predictions, list(Y)
-        p = []
-        for x in preds:
-            p.append(list(x))
-        preds = p
-        flat_preds = [item for sublist in preds for item in sublist]
+
+        # TODO rewrite the following code. It is very unclear and has overly complicated list comprehensions which make no sense.
+        preds = [list(k) for k in preds]
+        flat_preds = [round(val) for li in preds for nparray in li for val in nparray]
         flat_Y = [item for sublist in Y for item in sublist]
         preds, Y = flat_preds, flat_Y
         print("predicted: {}".format(preds[:25]))
         print("actual: {}".format(Y[:25]))
+        # compute squared error
+        preds = preds[:len(Y)]
+        Y, preds = np.array(Y), np.array(preds)
+        assert len(Y) == len(preds), "Y is {} but preds is {}".format(len(Y), len(preds))
+        print("err: {}".format(sum(abs(preds - Y))))
 
 
     return training_losses
