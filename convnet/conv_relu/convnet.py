@@ -14,11 +14,12 @@ logs_path = '/tmp/cnnlog'
 x = tf.placeholder(tf.float32, shape=[None, 784], name='x-input')
 y_ = tf.placeholder(tf.float32, shape=[None, 10],name='y-labels')
 
-def weight_variable(shape, name = 'Weights'):
+def weight_variable(shape, name = 'Weights', use_xavier = True):
     """Initializes weights randomly from a normal distribution
     Params: shape: list of dimensionality of the tensor to be initialized
+    name: Name for the tensorboard graph, use_xavier: use xavier init of weights or not
     """
-    initial = tf.truncated_normal(shape, stddev=0.1)
+    initial = tf.truncated_normal(shape, stddev = (0.1 if not use_xavier else 0.1 / tf.sqrt(shape[0] / 2.0)))
     return tf.Variable(initial, name = name)
 
 
@@ -106,10 +107,10 @@ with tf.name_scope('Model'):
 
 	# Output layer: 10-way softmax
 	with tf.name_scope('softmax-output'):
-		y_out = tf.nn.softmax(tf.matmul(h_fc2_drop, W_fc3) + b_fc3, name = 'softmax-output')
+		y_out = tf.matmul(h_fc2_drop, W_fc3) + b_fc3
 
 with tf.name_scope('Loss'):
-	cross_entropy = -tf.reduce_sum(y_*tf.log(y_out))
+	cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits = y_out, labels = y_)
 
 with tf.name_scope('SGD'):
 	lr = 1e-4
@@ -121,7 +122,7 @@ with tf.name_scope('Accuracy'):
 
 init = tf.global_variables_initializer()
 # Create a summary to monitor cost tensor
-tf.summary.scalar("loss", cross_entropy)
+tf.summary.scalar("loss", tf.reduce_mean(cross_entropy))
 # Create a summary to monitor accuracy tensor
 tf.summary.scalar("accuracy", accuracy)
 # Merge all summaries into a single op
