@@ -28,7 +28,7 @@ def fc_layer(scope, x, weight_shape, activation = 'relu', keep_prob = 1.0):
         W_fc = weight_variable(weight_shape)
         b_shape = [weight_shape[-1]]
         b_fc = bias_variable(b_shape)
-        h_fc = tf.nn.sigmoid(tf.matmul(x, W_fc) + b_fc)
+        h_fc = tf.nn.relu(tf.matmul(x, W_fc) + b_fc)
         h_fc_drop = tf.nn.dropout(h_fc, keep_prob=keep_prob)
         return h_fc_drop
 
