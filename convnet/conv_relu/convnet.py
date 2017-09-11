@@ -1,8 +1,5 @@
 import tensorflow as tf
 import numpy as np
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
-
 n_epochs = 20000
 minibatch_size = 50
 lr = 1e-4
@@ -39,6 +36,10 @@ def conv2d(x, W):
     """
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
+def conv2d_transpose(x, W, output_shape):
+	"""Performs transpose convolution, expands the input"""
+	return tf.nn.conv2d_transpose(x, W, output_shape = output_shape, strides = [1, 1, 1, 1], padding = 'SAME')
+
 def max_pool_2x2(x, name = 'max-pool-2x2'):
     """Performs a max pooling operation over a 2 x 2 region"""
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
@@ -59,9 +60,18 @@ with tf.name_scope('Model'):
 
 	# define weights and biases for next convolution operation
 
+	# TEST CODE FOR TRANSPOSED CONV
+	W_conv_transpose = weight_variable([5, 5, 32, 32], name = 'test-conv-transpose-w')
+	b_conv_transpose = bias_variable([32], name = 'test-conv2-transpose-b')
+	with tf.name_scope('transposed-conv-test'):
+		print(tf.shape(h_pool1))
+		print(tf.shape(W_conv_transpose))
+		h_conv_transpose = tf.nn.relu(conv2d_transpose(h_pool1, W_conv_transpose, output_shape = tf.shape(h_pool1)) + b_conv_transpose, name = 'conv-relu-2')
+	h_pool1 = h_conv_transpose
+
+
 	W_conv2 = weight_variable([5, 5, 32, 64], name='conv2-weights')
 	b_conv2 = bias_variable([64], name = 'conv2-bias')
-
 	# LAYER 2: convolution -> ReLu -> max pooling -> local response normalization
 	with tf.name_scope('conv-layer-2'):
 		h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name = 'conv-relu-2')
@@ -128,6 +138,8 @@ tf.summary.scalar("accuracy", accuracy)
 # Merge all summaries into a single op
 merged_summary_op = tf.summary.merge_all()
 
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 with tf.Session() as sess:
 	sess.run(init)
 	summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
