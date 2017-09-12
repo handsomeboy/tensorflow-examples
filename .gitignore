@@ -1,2 +1,7 @@
 MNIST_data/*
 gan/*.png
+.ipynb_checkpoints
+.__pycache__
+.data_set
+convnet/conv_relu/data_set/*
+convnet/conv_relu/__pycache__/
