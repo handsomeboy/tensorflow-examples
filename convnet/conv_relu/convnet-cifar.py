@@ -162,7 +162,9 @@ with tf.Session() as sess:
         _, c, summary = sess.run([train_step, cross_entropy, merged_summary_op],
             feed_dict = {x: batch_x, y_: batch_y, keep_prob: 1 - dropout_prob})
         summary_writer.add_summary(summary, i)
-    test_acc = accuracy.eval(feed_dict={x: batch_x, y_: batch_y.reshape(1, train_y.shape[1]), keep_prob: 1.0})
+    train_acc = accuracy.eval(feed_dict={x: train_x, y_: train_y, keep_prob: 1.0})
+    test_acc = accuracy.eval(feed_dict={x: test_x, y_: test_y, keep_prob: 1.0})
+    print("train accuracy: {}".format(train_acc))
     print("test accuracy {}".format(test_acc))
     print("run the command tensorboard --logdir=/tmp/cnnlog and then go to localhost:6006 ")
     sess.close()
