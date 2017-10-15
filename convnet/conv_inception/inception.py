@@ -48,6 +48,7 @@ def max_pool_3x3(x, name = 'max-pool-3x3'):
 x_image = tf.reshape(x, [-1,28,28,1], name = 'x-image-reshaped') # convert x to a 4-d tensor
 
 with tf.name_scope('model'):
+    print("going through inception module 1")
     # Inception module 1
     # 1x1 convolution -> 32 feature maps
     W_conv1_1x1_1 = weight_variable([1, 1, 1, 32], name = 'W_conv1_1x1_1')
@@ -66,6 +67,7 @@ with tf.name_scope('model'):
     W_conv1_1x1_4 = weight_variable([1, 1, 1, 32], name = 'W_conv1_1x1_4')
     b_conv1_1x1_4 = bias_variable([32], name = 'b_conv1_1x1_4')
     with tf.name_scope('inception-1'):
+        print("going through inception module 1")
         # compute 1x1, 1x1 -> 3x3, 1x1 -> 5x5, and max-pool of x followed by 1x1
         # direct 1 x 1 conv
         h_1x1_1 = conv2d(x_image, W_conv1_1x1_1) + b_conv1_1x1_1
@@ -98,6 +100,7 @@ with tf.name_scope('model'):
     W_conv2_1x1_4 = weight_variable([1, 1, 4 * 32, 64], name = 'W_conv2_1x1_4')
     b_conv2_1x4_4 = bias_variable([64], name = 'b_conv2_1x1_4')
     with tf.name_scope('inception-2'):
+        print("going through inception module 2")
         # compute direct 1x1 conv
         h_1x1_1_2 = conv2d(inception_1, W_conv2_1x1_1) + b_conv2_1x1_1
         # compute 1x1 conv -> relu -> 3x3 conv
@@ -109,28 +112,33 @@ with tf.name_scope('model'):
         pooled = max_pool_3x3(inception_1)
         inception_2 = tf.nn.relu(tf.concat([h_1x1_1_2, h_3x3_2, h_5x5_2, pooled], 3))
 
-    flattened = tf.reshape(inception_2, [-1, 28 * 28 * 4 * 64]) # dim of image, 4 concats and 64 maps
+    flattened = tf.reshape(inception_2, [-1, 28 * 28 * 4 * 5984])
     # first fully-connected layer
-    W_fc1 = weight_variable([28 * 28 * 4 * 64, 200], 'W_fc1')
+    print("going through first FC layer")
+    W_fc1 = weight_variable([28 * 28 * 4 * 5984, 200], 'W_fc1')
     b_fc1 = bias_variable([200], 'b_fc1')
     with tf.name_scope('fc-1'):
         h_fc1 = tf.nn.relu(tf.matmul(flattened, W_fc1) + b_fc1)
         h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob = keep_prob)
 
     # final fc layer -> softmax
+    print("going through final FC layer")
     W_fc2 = weight_variable([200, 10], 'W_fc2')
     b_fc2 = bias_variable([10], 'b_fc2')
     with tf.name_scope('softmax-2'):
         h_fc2 = tf.matmul(h_fc1, W_fc2) + b_fc2
 
 with tf.name_scope('loss'):
+    print("the loss")
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits =h_fc2, labels = y_)
 
 with tf.name_scope('optimizer'):
+    print("the optimizer")
     lr = 1e-4
     opt = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 
 with tf.name_scope('acc'):
+    print("the accuracy")
     cp = tf.equal(tf.argmax(h_fc2, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(cp, tf.float32))
 
@@ -144,10 +152,15 @@ merged_summary_op = tf.summary.merge_all()
 
 n_epochs = 20000
 minibatch_size = 88
+print("about to launch the session")
 with tf.Session() as sess:
+    print("about to run sess.run init")
     sess.run(init)
+    print("ran sess.run init")
     # grab the file writer
     summary_writer = tf.summary.FileWriter('/tmp/inceptionlog', graph=tf.get_default_graph())
+    print("HERE ABOUT TO START")
+    exit()
     for i in range(n_epochs):
         batch = mnist.train.next_batch(minibatch_size)
         if i % 100 == 0:
